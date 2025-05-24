@@ -1,0 +1,276 @@
+:root {
+  --sidebar-bg: #202338;
+  --sidebar-highlight: #2d3050;
+  --accent: #4f46e5;
+  --text-light: #e0e0e0;
+  --text-muted: #aaa;
+  --border: #3f415a;
+  --bg-light: #f8f9fa;
+  --font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  background-color: var(--bg-light);
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  position: fixed;
+  background-color: var(--sidebar-bg);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.sidebar-header {
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--sidebar-highlight);
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 22px;
+  color: white;
+}
+
+.sidebar-header small {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.sidebar-menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.sidebar-menu li {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-menu li a {
+  display: block;
+  padding: 15px 20px;
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: 15px;
+  transition: background 0.2s ease, padding-left 0.2s;
+}
+
+.sidebar-menu li a:hover {
+  background-color: var(--accent);
+  padding-left: 28px;
+  color: white;
+  font-weight: 500;
+}
+
+/* ===== Table + Container ===== */
+.main-container {
+  margin-left: 250px;
+  padding: 40px 30px;
+}
+
+.table-wrapper {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.table-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 500px; /* เดิมอาจ 700px */
+}
+
+th,
+td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #eaeaea;
+  font-size: 15px;
+}
+
+th {
+  background-color: #f9f9f9;
+  color: #333;
+  cursor: pointer;
+}
+
+td img {
+  border-radius: 4px;
+}
+
+/* ===== Buttons ===== */
+
+.button {
+  background-color: #4f46e5;
+  color: white;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.button:hover {
+  background-color: #4338ca;
+}
+
+a.button {
+  background-color: var(--accent);
+  color: white;
+  padding: 10px 16px;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+a.button:hover {
+  background-color: #4338ca;
+}
+
+/* ===== Search Box ===== */
+input[type="text"] {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 100%;
+  max-width: 300px;
+  font-size: 15px;
+  margin: 16px 0;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .main-container {
+    margin-left: 0;
+    padding: 20px;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    transition: left 0.3s ease;
+    z-index: 999;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .sidebar-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background-color: var(--accent, #4f46e5);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    z-index: 1000;
+    cursor: pointer;
+  }
+
+  .main-container {
+    margin-left: 0 !important;
+    padding-top: 60px;
+  }
+
+  table {
+    font-size: 13px;
+  }
+
+  th,
+  td {
+    padding: 10px;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .table-header h2 {
+    font-size: 18px;
+  }
+
+  .button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+
+.modal h3 {
+  margin-top: 0;
+}
+
+.modal-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.modal-confirm {
+  background: #4f46e5;
+  color: white;
+}
+
+.modal-cancel {
+  background: #e5e7eb;
+  color: #333;
+}
