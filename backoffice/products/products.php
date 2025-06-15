@@ -3,7 +3,7 @@ require_once '../../includes/db.php';
 require_once '../components/Table.php';
 require_once '../components/Pagination.php';
 require_once '../components/SearchBox.php';
-
+require_once '../../includes/config.php';
 
 $perPage = 20;
 $page = $_GET['page'] ?? 1;
@@ -18,38 +18,38 @@ $products = $stmt->fetchAll();
 
 $headers = ['ชื่อสินค้า', 'ราคา', 'คงเหลือ', 'รูปภาพ', 'จัดการ'];
 $rows = array_map(function ($p) {
-    return [
-        htmlspecialchars($p['name']),
-        number_format($p['price'], 2),
-        $p['stock'],
-        $p['image'] ? "<img src='/uploads/{$p['image']}' width='60'>" : 'ไม่มีรูป',
-        "<a href='edit_product.php?id={$p['id']}'>✏️</a> | <a href='#' onclick=\"confirmDelete('delete_product.php?id={$p['id']}')\">🗑️</a>",
-    ];
+  return [
+    htmlspecialchars($p['name']),
+    number_format($p['price'], 2),
+    $p['stock'],
+    $p['image'] ? "<img src='" . BASE_PATH . "/uploads/{$p['image']}' width='60'>" : 'ไม่มีรูป',
+    "<a href='edit_product.php?id={$p['id']}'>✏️</a> | <a href='#' onclick=\"confirmDelete('delete_product.php?id={$p['id']}')\">🗑️</a>",
+  ];
 }, $products);
 
 session_start();
 $toast = '';
 if (isset($_SESSION['product_updated'])) {
-    $toast = '✅ แก้ไขสินค้าสำเร็จ';
-    unset($_SESSION['product_updated']);
+  $toast = '✅ แก้ไขสินค้าสำเร็จ';
+  unset($_SESSION['product_updated']);
 }
 if (isset($_SESSION['product_deleted'])) {
-    $toast = '🗑️ ลบสินค้าสำเร็จ';
-    unset($_SESSION['product_deleted']);
+  $toast = '🗑️ ลบสินค้าสำเร็จ';
+  unset($_SESSION['product_deleted']);
 }
 ?>
 <?php ob_start(); ?>
 
 <?php if ($toast): ?>
-    <div id="toast-msg" style="position: fixed; top: 20px; right: 20px; background: #333; color: #fff; padding: 12px 20px; border-radius: 6px; z-index: 1000;">
-        <?= $toast ?>
-    </div>
-    <script>
-        setTimeout(() => {
-            const toast = document.getElementById('toast-msg');
-            if (toast) toast.style.display = 'none';
-        }, 3000);
-    </script>
+  <div id="toast-msg" style="position: fixed; top: 20px; right: 20px; background: #333; color: #fff; padding: 12px 20px; border-radius: 6px; z-index: 1000;">
+    <?= $toast ?>
+  </div>
+  <script>
+    setTimeout(() => {
+      const toast = document.getElementById('toast-msg');
+      if (toast) toast.style.display = 'none';
+    }, 3000);
+  </script>
 <?php endif; ?>
 
 <div class="table-header">
@@ -73,22 +73,22 @@ if (isset($_SESSION['product_deleted'])) {
 </div>
 
 <script>
-let deleteUrl = '';
+  let deleteUrl = '';
 
-function confirmDelete(url) {
-  deleteUrl = url;
-  document.getElementById('deleteModal').style.display = 'flex';
-}
-
-function closeModal() {
-  document.getElementById('deleteModal').style.display = 'none';
-}
-
-document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
-  if (deleteUrl) {
-    window.location.href = deleteUrl;
+  function confirmDelete(url) {
+    deleteUrl = url;
+    document.getElementById('deleteModal').style.display = 'flex';
   }
-});
+
+  function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+  }
+
+  document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    if (deleteUrl) {
+      window.location.href = deleteUrl;
+    }
+  });
 </script>
 
 

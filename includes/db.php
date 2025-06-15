@@ -1,8 +1,8 @@
 <?php
 $host = 'localhost';
-$db = 'l3en_commerce_db';
-$user = 'superadmin';
-$pass = 'password123';
+$db = 'ben_commerce';
+$user = 'root';
+$pass = '';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -18,4 +18,3 @@ try {
     echo "❌ Database connection failed: " . $e->getMessage();
     exit;
 }
-?>
