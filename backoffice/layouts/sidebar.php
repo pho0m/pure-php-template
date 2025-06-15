@@ -7,9 +7,9 @@
     </div>
     <ul class="sidebar-menu">
         <li><a href="<?= BASE_PATH ?>/index.php">📊 Dashboard</a></li>
-        <li><a href="<?= BASE_PATH ?>/backoffice/products/products.php">📦 Products</a></li>
-        <li><a href="<?= BASE_PATH ?>/backoffice/users/users.php">👥 Users</a></li>
-        <li><a href="<?= BASE_PATH ?>/backoffice/customers/customers.php">🧑‍💼 Customers</a></li>
         <li><a href="<?= BASE_PATH ?>/backoffice/orders/orders.php">🧾 Orders</a></li>
+        <li><a href="<?= BASE_PATH ?>/backoffice/products/products.php">📦 Products</a></li>
+        <li><a href="<?= BASE_PATH ?>/backoffice/customers/customers.php">🧑‍💼 Customers</a></li>
+        <li><a href="<?= BASE_PATH ?>/backoffice/users/users.php">👥 Users</a></li>
     </ul>
 </div>
