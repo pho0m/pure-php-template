@@ -5,50 +5,63 @@ require_once '../components/Pagination.php';
 require_once '../components/SearchBox.php';
 require_once '../../includes/config.php';
 
+session_start();
+
 $perPage = 20;
 $page = $_GET['page'] ?? 1;
 $start = ($page - 1) * $perPage;
 
-// รับคำค้นจาก query string
+// รับคำค้น
 $searchCustomer = $_GET['search_customer'] ?? '';
 $searchProduct = $_GET['search_product'] ?? '';
+$statusFilter = $_GET['status'] ?? ''; // อาจเป็น 'paid', 'pending' ฯลฯ
 
-// นับจำนวนทั้งหมด
-$countSql = "
-    SELECT COUNT(DISTINCT orders.id)
-    FROM orders
-    LEFT JOIN customers ON orders.customer_id = customers.id
-    LEFT JOIN order_details od ON orders.id = od.order_id
-    LEFT JOIN products p ON od.product_id = p.id
-    WHERE customers.name LIKE :customer AND p.name LIKE :product
-";
-$countStmt = $pdo->prepare($countSql);
-$countStmt->execute([
+// เตรียม WHERE เงื่อนไข
+$where = "WHERE customers.name LIKE :customer AND p.name LIKE :product";
+$params = [
   ':customer' => "%$searchCustomer%",
   ':product' => "%$searchProduct%",
-]);
+];
+
+if ($statusFilter && in_array($statusFilter, ['pending', 'paid', 'shipped', 'cancelled'])) {
+  $where .= " AND orders.status = :status";
+  $params[':status'] = $statusFilter;
+}
+
+// นับจำนวนรายการ
+$countSql = "
+  SELECT COUNT(DISTINCT orders.id)
+  FROM orders
+  LEFT JOIN customers ON orders.customer_id = customers.id
+  LEFT JOIN order_details od ON orders.id = od.order_id
+  LEFT JOIN products p ON od.product_id = p.id
+  $where
+";
+$countStmt = $pdo->prepare($countSql);
+$countStmt->execute($params);
 $total = $countStmt->fetchColumn();
 
-// ดึงข้อมูลรายการคำสั่งซื้อ
+// ดึงข้อมูล
 $sql = "
-    SELECT DISTINCT orders.*, customers.name AS customer_name
-    FROM orders
-    LEFT JOIN customers ON orders.customer_id = customers.id
-    LEFT JOIN order_details od ON orders.id = od.order_id
-    LEFT JOIN products p ON od.product_id = p.id
-    WHERE customers.name LIKE :customer AND p.name LIKE :product
-    ORDER BY orders.created_at DESC
-    LIMIT :start, :limit
+  SELECT DISTINCT orders.*, customers.name AS customer_name
+  FROM orders
+  LEFT JOIN customers ON orders.customer_id = customers.id
+  LEFT JOIN order_details od ON orders.id = od.order_id
+  LEFT JOIN products p ON od.product_id = p.id
+  $where
+  ORDER BY orders.created_at DESC
+  LIMIT :start, :limit
 ";
 $stmt = $pdo->prepare($sql);
-$stmt->bindValue(':customer', "%$searchCustomer%", PDO::PARAM_STR);
-$stmt->bindValue(':product', "%$searchProduct%", PDO::PARAM_STR);
+foreach ($params as $key => $val) {
+  $stmt->bindValue($key, $val, PDO::PARAM_STR);
+}
 $stmt->bindValue(':start', $start, PDO::PARAM_INT);
 $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
 $stmt->execute();
 $orders = $stmt->fetchAll();
 
-// เตรียมข้อมูลตาราง
+// สร้างตาราง
 $headers = ['รหัสคำสั่งซื้อ', 'ลูกค้า', 'ราคารวม', 'สถานะ', 'วันที่สร้าง', 'จัดการ'];
 $rows = array_map(function ($o) {
   return [
@@ -61,13 +74,14 @@ $rows = array_map(function ($o) {
   ];
 }, $orders);
 
-session_start();
+// แสดง toast ถ้ามี
 $toast = '';
 if (isset($_SESSION['order_deleted'])) {
   $toast = '🗑️ ลบคำสั่งซื้อสำเร็จ';
   unset($_SESSION['order_deleted']);
 }
 ?>
+
 <?php ob_start(); ?>
 
 <?php if ($toast): ?>
@@ -82,13 +96,35 @@ if (isset($_SESSION['order_deleted'])) {
   </script>
 <?php endif; ?>
 
+<!-- Header -->
 <div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
   <h2>🧾 รายการคำสั่งซื้อ</h2>
   <a href="create_order.php" class="button">+ สร้างคำสั่งซื้อ</a>
 </div>
 
-<!-- 🔍 Search Form -->
+<!-- 🔖 Tabs -->
+<?php
+$tabs = [
+  '' => 'ทั้งหมด',
+  'pending' => 'รอชำระ',
+  'paid' => 'ชำระแล้ว',
+  'shipped' => 'จัดส่งแล้ว',
+  'cancelled' => 'ยกเลิกแล้ว'
+];
+?>
+<div style="margin: 16px 0;">
+  <?php foreach ($tabs as $key => $label): ?>
+    <?php
+    $active = ($statusFilter === $key || ($key === '' && !$statusFilter)) ? 'font-weight: bold; text-decoration: underline;' : '';
+    $query = http_build_query(array_merge($_GET, ['status' => $key, 'page' => 1]));
+    ?>
+    <a href="?<?= $query ?>" style="margin-right: 12px; <?= $active ?>"><?= $label ?></a>
+  <?php endforeach; ?>
+</div>
+
+<!-- 🔍 Search -->
 <form method="GET" style="margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+  <input type="hidden" name="status" value="<?= htmlspecialchars($statusFilter) ?>">
   <input type="text" name="search_customer" placeholder="ค้นหาชื่อลูกค้า" value="<?= htmlspecialchars($searchCustomer) ?>" style="padding: 6px;">
   <input type="text" name="search_product" placeholder="ค้นหาชื่อสินค้า" value="<?= htmlspecialchars($searchProduct) ?>" style="padding: 6px;">
   <button type="submit" class="button">ค้นหา</button>
@@ -120,11 +156,8 @@ if (isset($_SESSION['order_deleted'])) {
   function closeModal() {
     document.getElementById('deleteModal').style.display = 'none';
   }
-
   document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-    if (deleteUrl) {
-      window.location.href = deleteUrl;
-    }
+    if (deleteUrl) window.location.href = deleteUrl;
   });
 </script>
 
