@@ -9,19 +9,46 @@ $perPage = 20;
 $page = $_GET['page'] ?? 1;
 $start = ($page - 1) * $perPage;
 
-$total = $pdo->query("SELECT COUNT(*) FROM orders")->fetchColumn();
-$stmt = $pdo->prepare("
-    SELECT orders.*, customers.name AS customer_name
+// รับคำค้นจาก query string
+$searchCustomer = $_GET['search_customer'] ?? '';
+$searchProduct = $_GET['search_product'] ?? '';
+
+// นับจำนวนทั้งหมด
+$countSql = "
+    SELECT COUNT(DISTINCT orders.id)
     FROM orders
     LEFT JOIN customers ON orders.customer_id = customers.id
+    LEFT JOIN order_details od ON orders.id = od.order_id
+    LEFT JOIN products p ON od.product_id = p.id
+    WHERE customers.name LIKE :customer AND p.name LIKE :product
+";
+$countStmt = $pdo->prepare($countSql);
+$countStmt->execute([
+  ':customer' => "%$searchCustomer%",
+  ':product' => "%$searchProduct%",
+]);
+$total = $countStmt->fetchColumn();
+
+// ดึงข้อมูลรายการคำสั่งซื้อ
+$sql = "
+    SELECT DISTINCT orders.*, customers.name AS customer_name
+    FROM orders
+    LEFT JOIN customers ON orders.customer_id = customers.id
+    LEFT JOIN order_details od ON orders.id = od.order_id
+    LEFT JOIN products p ON od.product_id = p.id
+    WHERE customers.name LIKE :customer AND p.name LIKE :product
     ORDER BY orders.created_at DESC
     LIMIT :start, :limit
-");
+";
+$stmt = $pdo->prepare($sql);
+$stmt->bindValue(':customer', "%$searchCustomer%", PDO::PARAM_STR);
+$stmt->bindValue(':product', "%$searchProduct%", PDO::PARAM_STR);
 $stmt->bindValue(':start', $start, PDO::PARAM_INT);
 $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
 $stmt->execute();
 $orders = $stmt->fetchAll();
 
+// เตรียมข้อมูลตาราง
 $headers = ['รหัสคำสั่งซื้อ', 'ลูกค้า', 'ราคารวม', 'สถานะ', 'วันที่สร้าง', 'จัดการ'];
 $rows = array_map(function ($o) {
   return [
@@ -55,11 +82,19 @@ if (isset($_SESSION['order_deleted'])) {
   </script>
 <?php endif; ?>
 
-<div class="table-header">
+<div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
   <h2>🧾 รายการคำสั่งซื้อ</h2>
+  <a href="create_order.php" class="button">+ สร้างคำสั่งซื้อ</a>
 </div>
 
-<?php renderSearchBox(); ?>
+<!-- 🔍 Search Form -->
+<form method="GET" style="margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+  <input type="text" name="search_customer" placeholder="ค้นหาชื่อลูกค้า" value="<?= htmlspecialchars($searchCustomer) ?>" style="padding: 6px;">
+  <input type="text" name="search_product" placeholder="ค้นหาชื่อสินค้า" value="<?= htmlspecialchars($searchProduct) ?>" style="padding: 6px;">
+  <button type="submit" class="button">ค้นหา</button>
+  <a href="orders.php" class="button" style="background-color: #ccc;">รีเซ็ต</a>
+</form>
+
 <?php renderTable($headers, $rows); ?>
 <?php renderPagination($page, $total, $perPage); ?>
 
