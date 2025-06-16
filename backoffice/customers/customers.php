@@ -9,33 +9,33 @@ $perPage = 20;
 $page = $_GET['page'] ?? 1;
 $start = ($page - 1) * $perPage;
 
-$total = $pdo->query("SELECT COUNT(*) FROM products")->fetchColumn();
-$stmt = $pdo->prepare("SELECT * FROM products ORDER BY created_at DESC LIMIT :start, :limit");
+$total = $pdo->query("SELECT COUNT(*) FROM customers")->fetchColumn();
+$stmt = $pdo->prepare("SELECT * FROM customers ORDER BY created_at DESC LIMIT :start, :limit");
 $stmt->bindValue(':start', $start, PDO::PARAM_INT);
 $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
 $stmt->execute();
-$products = $stmt->fetchAll();
+$customers = $stmt->fetchAll();
 
-$headers = ['ชื่อสินค้า', 'ราคา', 'คงเหลือ', 'รูปภาพ', 'จัดการ'];
-$rows = array_map(function ($p) {
+$headers = ['ชื่อลูกค้า', 'อีเมล', 'เบอร์โทร', 'วันที่สร้าง', 'จัดการ'];
+$rows = array_map(function ($c) {
   return [
-    htmlspecialchars($p['name']),
-    number_format($p['price'], 2),
-    $p['stock'],
-    $p['image'] ? "<img src='" . BASE_PATH . "/uploads/{$p['image']}' width='60'>" : 'ไม่มีรูป',
-    "<a href='edit_product.php?id={$p['id']}'>✏️</a> | <a href='#' onclick=\"confirmDelete('delete_product.php?id={$p['id']}')\">🗑️</a>",
+    htmlspecialchars($c['name']),
+    htmlspecialchars($c['email']),
+    htmlspecialchars($c['phone']),
+    htmlspecialchars($c['created_at']),
+    "<a href='edit_customer.php?id={$c['id']}'>✏️</a> | <a href='#' onclick=\"confirmDelete('delete_customer.php?id={$c['id']}')\">🗑️</a>",
   ];
-}, $products);
+}, $customers);
 
 session_start();
 $toast = '';
-if (isset($_SESSION['product_updated'])) {
-  $toast = '✅ แก้ไขสินค้าสำเร็จ';
-  unset($_SESSION['product_updated']);
+if (isset($_SESSION['customer_updated'])) {
+  $toast = '✅ แก้ไขลูกค้าสำเร็จ';
+  unset($_SESSION['customer_updated']);
 }
-if (isset($_SESSION['product_deleted'])) {
-  $toast = '🗑️ ลบสินค้าสำเร็จ';
-  unset($_SESSION['product_deleted']);
+if (isset($_SESSION['customer_deleted'])) {
+  $toast = '🗑️ ลบลูกค้าสำเร็จ';
+  unset($_SESSION['customer_deleted']);
 }
 ?>
 <?php ob_start(); ?>
@@ -53,8 +53,8 @@ if (isset($_SESSION['product_deleted'])) {
 <?php endif; ?>
 
 <div class="table-header">
-  <h2>📦 รายการสินค้า</h2>
-  <a href="create_product.php" class="button">+ สร้างสินค้า</a>
+  <h2>🧑‍💼 รายชื่อลูกค้า</h2>
+  <a href="create_customer.php" class="button">+ เพิ่มลูกค้า</a>
 </div>
 
 <?php renderSearchBox(); ?>
@@ -64,7 +64,7 @@ if (isset($_SESSION['product_deleted'])) {
 <!-- Modal ยืนยันการลบ -->
 <div id="deleteModal" class="modal-backdrop">
   <div class="modal">
-    <h3>ยืนยันการลบสินค้า?</h3>
+    <h3>ยืนยันการลบลูกค้า?</h3>
     <div class="modal-actions">
       <button class="modal-cancel" onclick="closeModal()">ยกเลิก</button>
       <button class="modal-confirm" id="confirmDeleteBtn">ลบเลย</button>
@@ -91,9 +91,8 @@ if (isset($_SESSION['product_deleted'])) {
   });
 </script>
 
-
 <?php
 $content = ob_get_clean();
-$title = "Products";
+$title = "Customers";
 include __DIR__ . '/../layouts/layout.php';
 ?>

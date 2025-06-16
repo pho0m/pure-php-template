@@ -1,5 +1,6 @@
 <?php
 require_once '../../includes/db.php';
+require_once '../../includes/config.php';
 
 $id = $_GET['id'] ?? null;
 if (!$id) {
@@ -75,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label>
             รูปภาพ:
             <?php if ($product['image']): ?>
-                <br><img src="/uploads/<?= htmlspecialchars($product['image']) ?>" width="100"><br>
+                <img src="<?= BASE_PATH ?>/uploads/<?= htmlspecialchars($product['image']) ?>" width="60">
             <?php endif; ?>
             <input type="file" name="image">
         </label>
@@ -85,19 +86,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <div id="editModal" class="modal-backdrop">
-  <div class="modal">
-    <h3>ยืนยันการบันทึกข้อมูลสินค้า?</h3>
-    <div class="modal-actions">
-      <button class="modal-cancel" onclick="closeModal()">ยกเลิก</button>
-      <button class="modal-confirm" onclick="document.forms[0].submit()">ตกลง</button>
+    <div class="modal">
+        <h3>ยืนยันการบันทึกข้อมูลสินค้า?</h3>
+        <div class="modal-actions">
+            <button class="modal-cancel" onclick="closeModal()">ยกเลิก</button>
+            <button class="modal-confirm" onclick="document.forms[0].submit()">ตกลง</button>
+        </div>
     </div>
-  </div>
 </div>
 
 <script>
-function confirmEdit() {
-  document.getElementById('editModal').style.display = 'flex';
-}
+    function confirmEdit() {
+        document.getElementById('editModal').style.display = 'flex';
+    }
 </script>
 
 
