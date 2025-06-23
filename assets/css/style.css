@@ -15,6 +15,17 @@ body {
   background-color: var(--bg-light);
 }
 
+.navbar {
+  height: 60px;
+  background: #ffffff;
+  border-bottom: 1px solid #ccc;
+  margin-left: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
 /* ===== Sidebar ===== */
 .sidebar {
   width: 250px;
