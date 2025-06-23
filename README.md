@@ -20,17 +20,9 @@ git clone https://github.com/pho0m/pure-php-template.git myproject
 cd myproject
 ```
 
-#### 2. ติดตั้ง Dependencies (หากมี)
-
-```bash
-composer install
-```
-
-> _หมายเหตุ:_ โปรเจกต์นี้อาจไม่ใช้ Composer dependency มากนัก แต่ควรติดตั้งเพื่อรองรับอนาคต
-
 ---
 
-#### 3. คัดลอก `.env.example` ไปเป็น `.env`
+#### 2. คัดลอก `.env.example` ไปเป็น `.env`
 
 ```bash
 cp .env.example .env
@@ -47,7 +39,7 @@ DB_PASS=
 
 ---
 
-#### 4. สร้างฐานข้อมูล
+#### 3. สร้างฐานข้อมูล
 
 สร้างฐานข้อมูลตามชื่อใน `.env` เช่น `my_database` (ใช้ phpMyAdmin หรือ MySQL CLI ก็ได้):
 
@@ -61,11 +53,9 @@ CREATE DATABASE my_database CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 mysql -u root -p my_database < schema.sql
 ```
 
-> _หมายเหตุ:_ หากไม่มีไฟล์ schema.sql ต้องสร้างตารางด้วยตนเองใน `includes/db.php` หรือเขียนคำสั่ง SQL สำหรับสร้าง `users`, `orders`, `products` ฯลฯ
-
 ---
 
-#### 5. รันเว็บเซิร์ฟเวอร์ (แบบ local)
+#### 4. รันเว็บเซิร์ฟเวอร์ (แบบ local)
 
 **กรณีใช้ PHP Built-in Server:**
 

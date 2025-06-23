@@ -1,8 +1,11 @@
 <?php
-$host = 'localhost';
-$db = 'ben_commerce';
-$user = 'root';
-$pass = '';
+// โหลด ENV
+$env = parse_ini_file(__DIR__ . '/../.env');
+
+$host = $env['DB_HOST'] ?? 'localhost';
+$db   = $env['DB_NAME'] ?? 'my_database';
+$user = $env['DB_USER'] ?? 'root';
+$pass = $env['DB_PASS'] ?? '';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
