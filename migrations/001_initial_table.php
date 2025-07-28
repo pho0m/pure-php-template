@@ -1,5 +1,6 @@
 <?php
 return function (PDO $pdo) {
+    // Products table (admin หรือ staff)
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS products (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -8,7 +9,9 @@ return function (PDO $pdo) {
             price DECIMAL(10,2) NOT NULL,
             stock INT NOT NULL,
             image VARCHAR(255),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TIMESTAMP NULL
         );
     ");
 
@@ -20,7 +23,9 @@ return function (PDO $pdo) {
             email VARCHAR(255) NOT NULL UNIQUE,
             password VARCHAR(255) NOT NULL,
             role ENUM('admin', 'staff') DEFAULT 'staff',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TIMESTAMP NULL
         );
     ");
 
@@ -32,10 +37,13 @@ return function (PDO $pdo) {
             email VARCHAR(255),
             phone VARCHAR(20),
             address TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TIMESTAMP NULL
         );
     ");
 
+    // Order table
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS orders (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -46,6 +54,8 @@ return function (PDO $pdo) {
             vat DECIMAL(10,2) DEFAULT 0,
             status ENUM('pending', 'paid', 'shipped', 'cancelled') DEFAULT 'pending',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TIMESTAMP NULL,
             FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
         );
     ");
@@ -58,6 +68,9 @@ return function (PDO $pdo) {
             product_id INT NOT NULL,
             quantity INT NOT NULL,
             price DECIMAL(10,2) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            deleted_at TIMESTAMP NULL,
             FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
             FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
         );

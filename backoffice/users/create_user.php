@@ -8,12 +8,37 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $email = trim($_POST['email'] ?? '');
-    $role = trim($_POST['role'] ?? 'user');
+    $role = trim($_POST['role'] ?? 'staff');
 
+    // ตรวจสอบว่ากรอกข้อมูลครบหรือไม่
     if (!$name || !$email) {
         $error = 'กรุณากรอกข้อมูลให้ครบถ้วน';
     }
 
+    // ตรวจสอบรูปแบบอีเมล
+    if (!$error && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'รูปแบบอีเมลไม่ถูกต้อง';
+    }
+
+    // ตรวจสอบชื่อซ้ำ
+    if (!$error) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE name = ?");
+        $stmt->execute([$name]);
+        if ($stmt->fetchColumn() > 0) {
+            $error = 'ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว กรุณาใช้ชื่ออื่น';
+        }
+    }
+
+    // ตรวจสอบอีเมลซ้ำ
+    if (!$error) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        if ($stmt->fetchColumn() > 0) {
+            $error = 'อีเมลนี้ถูกใช้ไปแล้ว กรุณาใช้อีเมลอื่น';
+        }
+    }
+
+    // ถ้าไม่มี error → บันทึกข้อมูล
     if (!$error) {
         $stmt = $pdo->prepare("INSERT INTO users (name, email, role) VALUES (?, ?, ?)");
         $stmt->execute([$name, $email, $role]);
@@ -33,15 +58,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
     <form method="POST" style="display: flex; flex-direction: column; gap: 16px;">
         <label>ชื่อ:
-            <input type="text" name="name" required>
+            <input type="text" name="name" value="<?= htmlspecialchars($_POST['name'] ?? '') ?>" required>
         </label>
         <label>Email:
-            <input type="email" name="email" required>
+            <input type="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required>
         </label>
         <label>Role:
             <select name="role">
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
+                <option value="staff" <?= ($_POST['role'] ?? '') === 'staff' ? 'selected' : '' ?>>Staff</option>
+                <option value="admin" <?= ($_POST['role'] ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
             </select>
         </label>
         <button type="submit">💾 บันทึก</button>

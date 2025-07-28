@@ -28,6 +28,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'กรุณากรอกข้อมูลให้ครบถ้วน';
     }
 
+    // ตรวจสอบรูปแบบอีเมล
+    if (!$error && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'รูปแบบอีเมลไม่ถูกต้อง';
+    }
+
+    // ตรวจสอบชื่อซ้ำ
+    if (!$error) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE name = ?");
+        $stmt->execute([$name]);
+        if ($stmt->fetchColumn() > 0) {
+            $error = 'ชื่อผู้ใช้นี้ถูกใช้ไปแล้ว กรุณาใช้ชื่ออื่น';
+        }
+    }
+
+    // ตรวจสอบอีเมลซ้ำ
+    if (!$error) {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        if ($stmt->fetchColumn() > 0) {
+            $error = 'อีเมลนี้ถูกใช้ไปแล้ว กรุณาใช้อีเมลอื่น';
+        }
+    }
+
+
     if (!$error) {
         $stmt = $pdo->prepare("UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?");
         $stmt->execute([$name, $email, $role, $id]);
