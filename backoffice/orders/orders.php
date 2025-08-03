@@ -13,7 +13,6 @@ $start = ($page - 1) * $perPage;
 
 // รับคำค้น
 $searchCustomer = $_GET['search_customer'] ?? '';
-$searchProduct = $_GET['search_product'] ?? '';
 $statusFilter = $_GET['status'] ?? ''; // อาจเป็น 'paid', 'pending' ฯลฯ
 
 // เตรียม WHERE เงื่อนไข
