@@ -63,12 +63,23 @@ $orders = $stmt->fetchAll();
 
 // สร้างตาราง
 $headers = ['รหัสคำสั่งซื้อ', 'ลูกค้า', 'ราคารวม', 'สถานะ', 'วันที่สร้าง', 'จัดการ'];
-$rows = array_map(function ($o) {
+$tabs = [
+  '' => 'ทั้งหมด',
+  'pending' => 'รอชำระ',
+  'paid' => 'ชำระแล้ว',
+  'shipped' => 'จัดส่งแล้ว',
+  'cancelled' => 'ยกเลิกแล้ว'
+];
+
+$rows = array_map(function ($o) use ($tabs) {
+  $status = $o['status'];
+  $statusText = $tabs[$status] ?? htmlspecialchars($status); // fallback ถ้าไม่ตรง key
+
   return [
     htmlspecialchars($o['order_number']),
     htmlspecialchars($o['customer_name']),
     number_format($o['total_price'], 2) . ' ฿',
-    htmlspecialchars($o['status']),
+    $statusText,
     htmlspecialchars($o['created_at']),
     "<a href='view_order.php?id={$o['id']}'>🔍</a> | <a href='#' onclick=\"confirmDelete('delete_order.php?id={$o['id']}')\">🗑️</a>",
   ];
@@ -126,7 +137,6 @@ $tabs = [
 <form method="GET" style="margin: 20px 0; display: flex; gap: 10px; flex-wrap: wrap;">
   <input type="hidden" name="status" value="<?= htmlspecialchars($statusFilter) ?>">
   <input type="text" name="search_customer" placeholder="ค้นหาชื่อลูกค้า" value="<?= htmlspecialchars($searchCustomer) ?>" style="padding: 6px;">
-  <input type="text" name="search_product" placeholder="ค้นหาชื่อสินค้า" value="<?= htmlspecialchars($searchProduct) ?>" style="padding: 6px;">
   <button type="submit" class="button">ค้นหา</button>
   <a href="orders.php" class="button" style="background-color: #ccc;">รีเซ็ต</a>
 </form>
