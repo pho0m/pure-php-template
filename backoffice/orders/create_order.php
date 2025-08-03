@@ -4,110 +4,6 @@ require_once '../../includes/config.php';
 ?>
 
 <?php ob_start(); ?>
-<style>
-    h2,
-    h3 {
-        margin-bottom: 10px;
-        color: #333;
-    }
-
-    form label {
-        display: block;
-        margin-top: 10px;
-        font-weight: bold;
-    }
-
-    input[type="text"],
-    input[type="number"] {
-        padding: 6px 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        width: 100%;
-        max-width: 400px;
-    }
-
-    button {
-        padding: 6px 12px;
-        border: none;
-        background-color: #007bff;
-        color: white;
-        border-radius: 4px;
-        cursor: pointer;
-    }
-
-    button:hover {
-        background-color: #0056b3;
-    }
-
-    .modal-backdrop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.4);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 999;
-    }
-
-    .modal {
-        background: white;
-        padding: 20px;
-        width: 90%;
-        max-width: 500px;
-        border-radius: 8px;
-        box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .customer-item:hover {
-        background-color: #f0f0f0;
-        cursor: pointer;
-    }
-
-    table {
-        border-collapse: collapse;
-        width: 100%;
-    }
-
-    th,
-    td {
-        padding: 8px;
-        text-align: left;
-    }
-
-    th {
-        background-color: #f8f8f8;
-    }
-
-    tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
-
-    .suggestion-list {
-        position: absolute;
-        background: white;
-        border: 1px solid #ccc;
-        list-style: none;
-        padding: 0;
-        margin-top: 4px;
-        max-height: 200px;
-        overflow-y: auto;
-        z-index: 1000;
-        width: 300px;
-    }
-
-    .suggestion-list li {
-        padding: 8px 10px;
-        cursor: pointer;
-    }
-
-    .suggestion-list li:hover {
-        background-color: #eee;
-    }
-</style>
-
 
 <h2>➕ สร้างคำสั่งซื้อใหม่</h2>
 
@@ -127,11 +23,7 @@ require_once '../../includes/config.php';
 
     <!-- สินค้า -->
     <h3>🛒 เลือกสินค้า</h3>
-    <label>
-        พิมพ์ชื่อสินค้า:
-        <input type="text" id="productInput" autocomplete="off">
-        <ul id="productSuggestions" class="suggestion-list"></ul>
-    </label>
+    <button type="button" onclick="openProductModal()">เลือกสินค้า</button>
 
     <table id="productTable" border="1" cellpadding="6" style="margin-top: 10px; width: 100%;">
         <thead>
@@ -154,7 +46,6 @@ require_once '../../includes/config.php';
         <strong>รวมทั้งหมด: <span id="totalDisplay">0</span> ฿</strong>
     </div>
 
-    <button type="button" onclick="openProductModal()">เลือกสินค้า</button>
     <button type="submit">💾 บันทึกคำสั่งซื้อ</button>
 </form>
 
@@ -162,29 +53,41 @@ require_once '../../includes/config.php';
 <div id="customerModal" class="modal-backdrop" style="display: none;">
     <div class="modal">
         <h3>เลือกลูกค้า</h3>
-        <input type="text" id="customerSearch" placeholder="ค้นหาด้วยชื่อ / เบอร์ / อีเมล" oninput="filterCustomers()">
+        <input type="text" id="customerSearch" placeholder="ค้นหาชื่อลูกค้า..." oninput="filterCustomers()">
         <div id="customerList" style="max-height: 250px; overflow-y: auto;">
             <?php
             $stmt = $pdo->query("SELECT id, name, email, phone FROM customers ORDER BY name ASC LIMIT 100");
             $customers = $stmt->fetchAll();
             foreach ($customers as $c):
             ?>
-                <div class="customer-item" data-id="<?= $c['id'] ?>" data-name="<?= htmlspecialchars($c['name']) ?>" data-email="<?= htmlspecialchars($c['email']) ?>" data-phone="<?= htmlspecialchars($c['phone']) ?>" onclick="selectCustomer(this)">
-                    <?= htmlspecialchars($c['name']) ?> (<?= htmlspecialchars($c['email']) ?> / <?= htmlspecialchars($c['phone']) ?>)
+                <div style="display: flex; flex-direction: column; align-items: flex-start; padding: 6px 0; gap: 2px;">
+                    <label style="align-items: flex-start; padding: 6px 0; gap: 2px;">
+                        <input type="radio" name="customer" class="customer-radio"
+                            data-id="<?= $c['id'] ?>"
+                            data-name="<?= htmlspecialchars($c['name']) ?>"
+                            data-email="<?= htmlspecialchars($c['email']) ?>"
+                            data-phone="<?= htmlspecialchars($c['phone']) ?>">
+                        <div>
+                            <strong><?= htmlspecialchars($c['name']) ?></strong><br>
+                            <small><?= htmlspecialchars($c['email']) ?> / <?= htmlspecialchars($c['phone']) ?></small>
+                        </div>
+                    </label>
                 </div>
+
             <?php endforeach; ?>
         </div>
         <div style="text-align: right; margin-top: 10px;">
             <button type="button" onclick="closeCustomerModal()">ปิด</button>
+            <button type="button" onclick="confirmCustomer()">ยืนยัน</button>
         </div>
     </div>
 </div>
+
 
 <!-- Modal สินค้า -->
 <div id="productModal" class="modal-backdrop" style="display: none;">
     <div class="modal">
         <h3>เลือกสินค้า</h3>
-        <input type="text" id="productSearch" placeholder="ค้นหาด้วยชื่อ" oninput="filterProducts()">
         <div id="productList" style="max-height: 250px; overflow-y: auto;">
             <?php
             $stmt = $pdo->query("SELECT id, name, price FROM products ORDER BY created_at DESC LIMIT 50");
@@ -204,6 +107,7 @@ require_once '../../includes/config.php';
     </div>
 </div>
 
+<!-- JavaScript -->
 <script>
     const productTableBody = document.querySelector('#productTable tbody');
 
@@ -215,11 +119,16 @@ require_once '../../includes/config.php';
         document.getElementById('customerModal').style.display = 'none';
     }
 
-    function selectCustomer(el) {
-        document.getElementById('selectedCustomerName').value = el.dataset.name;
-        document.getElementById('customerId').value = el.dataset.id;
-        document.getElementById('customerEmail').value = el.dataset.email;
-        document.getElementById('customerPhone').value = el.dataset.phone;
+    function confirmCustomer() {
+        const selected = document.querySelector('.customer-radio:checked');
+        if (!selected) {
+            alert("กรุณาเลือกลูกค้า");
+            return;
+        }
+        document.getElementById('selectedCustomerName').value = selected.dataset.name;
+        document.getElementById('customerId').value = selected.dataset.id;
+        document.getElementById('customerEmail').value = selected.dataset.email;
+        document.getElementById('customerPhone').value = selected.dataset.phone;
         closeCustomerModal();
     }
 
@@ -228,6 +137,14 @@ require_once '../../includes/config.php';
         document.getElementById('customerId').value = '';
         document.getElementById('customerEmail').value = '';
         document.getElementById('customerPhone').value = '';
+    }
+
+    function filterCustomers() {
+        const input = document.getElementById('customerSearch').value.toLowerCase();
+        document.querySelectorAll('#customerList label').forEach(label => {
+            const name = label.textContent.toLowerCase();
+            label.style.display = name.includes(input) ? 'flex' : 'none';
+        });
     }
 
     function openProductModal() {
@@ -284,6 +201,7 @@ require_once '../../includes/config.php';
         let finalTotal = discounted + vat;
         document.getElementById('totalDisplay').innerText = finalTotal.toFixed(2);
     }
+
     document.getElementById('discount').addEventListener('input', calculateTotal);
     document.getElementById('vat').addEventListener('input', calculateTotal);
 

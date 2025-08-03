@@ -69,8 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             รูปภาพ:
             <input type="file" name="image" accept="image/*">
             <!-- รูป preview -->
-<img id="previewImage" src="#" alt="Preview" style="display: none; margin-top: 10px; max-width: 200px; border-radius: 6px;" />
-
+            <img id="previewImage" src="#" alt="Preview" style="display: none; margin-top: 10px; max-width: 200px; border-radius: 6px;" />
         </label>
 
         <button type="submit" class="button">💾 บันทึกสินค้า</button>
@@ -85,21 +84,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script>
-// ✅ Preview Image
-document.querySelector('input[name="image"]').addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    const preview = document.getElementById('previewImage');
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (event) {
-            preview.src = event.target.result;
-            preview.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
-    } else {
-        preview.style.display = 'none';
-    }
-});
+    // ✅ Preview Image
+    document.querySelector('input[name="image"]').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const preview = document.getElementById('previewImage');
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                preview.src = event.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            preview.style.display = 'none';
+        }
+    });
 </script>
 
 
