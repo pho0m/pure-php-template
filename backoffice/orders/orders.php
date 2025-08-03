@@ -17,10 +17,9 @@ $searchProduct = $_GET['search_product'] ?? '';
 $statusFilter = $_GET['status'] ?? ''; // อาจเป็น 'paid', 'pending' ฯลฯ
 
 // เตรียม WHERE เงื่อนไข
-$where = "WHERE orders.deleted_at IS NULL AND customers.name LIKE :customer AND p.name LIKE :product";
+$where = "WHERE orders.deleted_at IS NULL AND customers.name LIKE :customer";
 $params = [
   ':customer' => "%$searchCustomer%",
-  ':product' => "%$searchProduct%",
 ];
 
 if ($statusFilter && in_array($statusFilter, ['pending', 'paid', 'shipped', 'cancelled'])) {
