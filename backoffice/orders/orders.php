@@ -17,7 +17,7 @@ $searchProduct = $_GET['search_product'] ?? '';
 $statusFilter = $_GET['status'] ?? ''; // อาจเป็น 'paid', 'pending' ฯลฯ
 
 // เตรียม WHERE เงื่อนไข
-$where = "WHERE customers.name LIKE :customer AND p.name LIKE :product";
+$where = "WHERE orders.deleted_at IS NULL AND customers.name LIKE :customer AND p.name LIKE :product";
 $params = [
   ':customer' => "%$searchCustomer%",
   ':product' => "%$searchProduct%",
@@ -71,9 +71,17 @@ $tabs = [
   'cancelled' => 'ยกเลิกแล้ว'
 ];
 
-$rows = array_map(function ($o) use ($tabs) {
+$rows = array_map(function ($o) use ($tabs, $statusFilter) {
   $status = $o['status'];
-  $statusText = $tabs[$status] ?? htmlspecialchars($status); // fallback ถ้าไม่ตรง key
+  $statusText = $tabs[$status] ?? htmlspecialchars($status);
+
+  // 🔍 ปุ่มดูรายละเอียด
+  $actions = "<a href='view_order.php?id={$o['id']}'>🔍</a>";
+
+  // 🗑️ แสดงปุ่มลบเฉพาะสถานะ cancelled และยังไม่ถูกลบ
+  if ($statusFilter !== 'deleted' && $status === 'cancelled' && $o['deleted_at'] === null) {
+    $actions .= " | <a href='#' onclick=\"confirmDelete('delete_order.php?id={$o['id']}')\">🗑️</a>";
+  }
 
   return [
     htmlspecialchars($o['order_number']),
@@ -81,7 +89,7 @@ $rows = array_map(function ($o) use ($tabs) {
     number_format($o['total_price'], 2) . ' ฿',
     $statusText,
     htmlspecialchars($o['created_at']),
-    "<a href='view_order.php?id={$o['id']}'>🔍</a> | <a href='#' onclick=\"confirmDelete('delete_order.php?id={$o['id']}')\">🗑️</a>",
+    $actions
   ];
 }, $orders);
 
